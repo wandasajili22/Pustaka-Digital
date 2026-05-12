@@ -1,0 +1,99 @@
+{
+  "entities": {
+    "Book": {
+      "title": "Book",
+      "description": "A book in the library catalog",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Title of the book" },
+        "author": { "type": "string", "description": "Author of the book" },
+        "categoryId": { "type": "string", "description": "ID of the category" },
+        "description": { "type": "string", "description": "Synopsis of the book" },
+        "coverUrl": { "type": "string", "description": "URL to the cover image" },
+        "publishedYear": { "type": "number", "description": "Year of publication" },
+        "available": { "type": "number", "description": "Number of copies available for loan" },
+        "total": { "type": "number", "description": "Total number of copies in library" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "author", "categoryId", "available"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Book category",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Category name" },
+        "icon": { "type": "string", "description": "Lucide icon name" }
+      },
+      "required": ["name"]
+    },
+    "Borrowing": {
+      "title": "Borrowing",
+      "description": "A record of a borrowed book",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "UID of the user" },
+        "userName": { "type": "string", "description": "Name of the user" },
+        "bookId": { "type": "string", "description": "ID of the book" },
+        "bookTitle": { "type": "string", "description": "Title of the book" },
+        "status": { "type": "string", "enum": ["borrowed", "returned", "overdue"] },
+        "borrowDate": { "type": "string", "format": "date-time" },
+        "dueDate": { "type": "string", "format": "date-time" },
+        "returnDate": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "bookId", "status", "borrowDate", "dueDate"]
+    },
+    "User": {
+      "title": "User",
+      "description": "User profile data",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Full name" },
+        "email": { "type": "string", "description": "Email address" },
+        "photoURL": { "type": "string", "description": "Profile photo URL" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "role"]
+    },
+    "Log": {
+      "title": "Log",
+      "description": "System activity log",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "targetId": { "type": "string" },
+        "type": { "type": "string", "enum": ["admin", "user"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "action", "type", "createdAt"]
+    }
+  },
+  "firestore": {
+    "books": {
+      "schema": "Book",
+      "description": "Collection of books"
+    },
+    "categories": {
+      "schema": "Category",
+      "description": "Collection of book categories"
+    },
+    "borrowings": {
+      "schema": "Borrowing",
+      "description": "Records of book borrowings"
+    },
+    "users": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "logs": {
+      "schema": "Log",
+      "description": "System and user activity logs"
+    }
+  }
+}

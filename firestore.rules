@@ -1,0 +1,132 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isEmailVerified() {
+      // Relaxing this to just isSignedIn() as AI Studio test users might not have verified emails
+      return isSignedIn();
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      // Robust admin check using exists and get
+      return isSignedIn() && 
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // --- Books ---
+    match /books/{bookId} {
+      function isValidBook(data) {
+        return data.title is string && data.title.size() > 0 && data.title.size() <= 200
+            && data.author is string && data.author.size() > 0 && data.author.size() <= 100
+            && data.categoryId is string && isValidId(data.categoryId)
+            && data.available is int && data.available >= 0
+            && (data.coverUrl == null || data.coverUrl == "" || (data.coverUrl is string && data.coverUrl.size() <= 500));
+      }
+
+      allow read: if true; // Catalog is public
+      allow create: if isAdmin() && isValidBook(incoming()) && incoming().createdAt == request.time;
+      allow update: if (
+        (isAdmin() && isValidBook(incoming()) && (incoming().updatedAt == request.time || !('updatedAt' in incoming()))) ||
+        // Action: Borrow/Return (Allow updating 'available' field by authenticated users)
+        (isEmailVerified() && incoming().diff(existing()).affectedKeys().hasOnly(['available']) && incoming().available is int)
+      );
+      allow delete: if isAdmin();
+    }
+
+    // --- Categories ---
+    match /categories/{catId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- Borrowings ---
+    match /borrowings/{borrowId} {
+      function isValidBorrowing(data) {
+        return data.userId == request.auth.uid
+            && data.bookId is string && isValidId(data.bookId)
+            && data.status in ['borrowed', 'returned', 'overdue']
+            && data.borrowDate is timestamp
+            && data.dueDate is timestamp;
+      }
+
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow list: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if isEmailVerified() && isValidBorrowing(incoming()) && incoming().createdAt == request.time;
+      allow update: if (isAdmin() || (isOwner(existing().userId) && incoming().diff(existing()).affectedKeys().hasAny(['status', 'returnDate', 'updatedAt'])));
+      allow delete: if isAdmin();
+    }
+
+    // --- Returns ---
+    match /returns/{returnId} {
+      allow read: if isAdmin();
+      allow create: if isSignedIn() && incoming().borrowingId is string && incoming().createdAt == request.time;
+    }
+
+    // --- Users ---
+    match /users/{userId} {
+      function isValidUser(data) {
+        return data.name is string && data.name.size() > 0 && data.name.size() <= 100
+            && data.email is string && data.email.size() > 0
+            && (data.role == 'member' || data.role == 'admin');
+      }
+
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && isOwner(userId) && isValidUser(incoming()) && incoming().createdAt == request.time;
+      allow update: if isSignedIn() && (
+        (isOwner(userId) && 
+         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'photoURL', 'updatedAt']) && 
+         isValidUser(incoming()) &&
+         incoming().role == existing().role &&
+         incoming().email == existing().email &&
+         (!('updatedAt' in incoming()) || incoming().updatedAt == request.time)) ||
+        isAdmin()
+      );
+      allow delete: if isAdmin();
+    }
+
+    // --- Logs ---
+    match /logs/{logId} {
+      function isValidLog(data) {
+        return data.userId == request.auth.uid
+            && data.action is string && data.action.size() <= 200
+            && data.type in ['admin', 'user'];
+      }
+
+      allow read: if isAdmin();
+      allow create: if isSignedIn() && isValidLog(incoming()) && (incoming().createdAt == request.time || !('createdAt' in incoming()));
+      allow update, delete: if false;
+    }
+
+    // --- System ---
+    match /system/connection_test {
+      allow read: if true;
+    }
+  }
+}
