@@ -42,7 +42,7 @@ export default function Auth() {
       } else {
         const { user } = await createUserWithEmailAndPassword(auth, data.email, data.password);
         await updateProfile(user, { displayName: data.name });
-        
+
         // Create user profile in Firestore
         try {
           await setDoc(doc(db, 'users', user.uid), {
@@ -83,7 +83,7 @@ export default function Auth() {
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-100/40 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-violet-100/40 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-      
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -132,7 +132,7 @@ export default function Auth() {
           </div>
 
           {error && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               className="mb-8 p-4 bg-rose-50 border border-rose-100 text-rose-600 text-xs rounded-2xl font-bold uppercase tracking-wide"
@@ -233,7 +233,7 @@ export default function Auth() {
                 </>
               )}
             </button>
-            <AnimatePresence mode="wait">
+            {/* <AnimatePresence mode="wait">
               {isLogin && (
                 <motion.div
                   key="demo-creds"
@@ -242,20 +242,9 @@ export default function Auth() {
                   exit={{ opacity: 0, height: 0 }}
                   className="mt-6 p-4 bg-blue-50/50 border border-blue-100 rounded-2xl"
                 >
-                  {/* <p className="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-3">Akun Demo (Opsional)</p>
-                  <div className="space-y-2 text-xs font-medium text-slate-600">
-                    <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
-                      <span className="font-bold text-slate-800">Admin</span>
-                      <span className="font-mono text-[10px] text-slate-500">admin@pustaka.id / admin123</span>
-                    </div>
-                    <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
-                      <span className="font-bold text-slate-800">Customer</span>
-                      <span className="font-mono text-[10px] text-slate-500">user@pustaka.id / user123</span>
-                    </div>
-                  </div> */}
                 </motion.div>
               )}
-            </AnimatePresence>
+            </AnimatePresence> */}
 
           </form>
 
