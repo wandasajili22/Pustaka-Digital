@@ -242,7 +242,7 @@ export default function Auth() {
                   exit={{ opacity: 0, height: 0 }}
                   className="mt-6 p-4 bg-blue-50/50 border border-blue-100 rounded-2xl"
                 >
-                  <p className="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-3">Akun Demo (Opsional)</p>
+                  {/* <p className="text-[10px] font-black text-blue-800 uppercase tracking-widest mb-3">Akun Demo (Opsional)</p>
                   <div className="space-y-2 text-xs font-medium text-slate-600">
                     <div className="flex justify-between items-center bg-white p-2 rounded-lg border border-slate-100">
                       <span className="font-bold text-slate-800">Admin</span>
@@ -252,7 +252,7 @@ export default function Auth() {
                       <span className="font-bold text-slate-800">Customer</span>
                       <span className="font-mono text-[10px] text-slate-500">user@pustaka.id / user123</span>
                     </div>
-                  </div>
+                  </div> */}
                 </motion.div>
               )}
             </AnimatePresence>
